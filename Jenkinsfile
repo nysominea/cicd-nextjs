@@ -25,25 +25,35 @@ spec:
   }
 
   stages {
-    stage('Build Docker Image') {
-      steps {
-        container('docker') {
-          sh """
-          docker build -t $REGISTRY:$IMAGE_TAG .
-          """
-        }
-      }
-    }
+    // stage('Build Docker Image') {
+    //   steps {
+    //     container('docker') {
+    //       sh """
+    //       docker build -t $REGISTRY:$IMAGE_TAG .
+    //       """
+    //     }
+    //   }
+    // }
 
-    stage('Docker Login & Push') {
+    // stage('Docker Login & Push') {
+    //   steps {
+    //     container('docker') {
+    //       withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+    //         sh '''
+    //           echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
+    //           docker push $REGISTRY:$IMAGE_TAG
+    //         '''
+    //       }
+    //     }
+    //   }
+    // }
+
+    stage('Deploy to K8s') {
       steps {
-        container('docker') {
-          withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+        container('kubectl') {
             sh '''
-              echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
-              docker push $REGISTRY:$IMAGE_TAG
+              kubectl set image deployment/nextjs container-cicd-nextjs=$REGISTRY:$IMAGE_TAG -n minea-nextjs
             '''
-          }
         }
       }
     }
